@@ -1,7 +1,7 @@
-This script is for load into the AutoHotKey 2.0, plug and play, but you need to fill your own values your fonts, color, space size, etc. 
-This footage is a brief showcase for the effect it can achive.
+This script is for load into the AutoHotKey 2.0, plug and play, but you need to fill your own values, such as your fonts, color, space size, etc. 
+This footage is a brief showcase for the effect it can achive: https://youtu.be/dBXBrbwaHFA
 
-The script support the primary keys on keyboard and the 5-key mouse. When you holding the key, the background is filled
+The script support the primary keys on keyboard and the 5-key mouse. When you holding the key, the background is filled.
 This script can display the key hits in ALL window (even the small prompt window), I use the same concept of the "Nvidia Frameview" to render the transparent background instead to be forced to make the overlay's own solid background.
 
 Customization supports:
