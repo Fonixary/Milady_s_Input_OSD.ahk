@@ -14,3 +14,5 @@ Customization supports:
 All at your flavor!
 
 Generated step by step on guided Gemini, built from zero, viewed and tested by foxwitch.
+
+	* Use this line in Powershell to quick setup the startup for your AHK: New-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' -Name 'AHK' -Value '"{your_path_here}"' -PropertyType String
