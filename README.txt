@@ -1,3 +1,10 @@
+>> Important notice: Beacuse this script draws independent GUI boxes instead of the WHQL hard driver embedding, therefore you need to capture the whole screen in OBS instead of the "Windows Capture" method, and this will runs sweet.
+>> Another notice: I suggest to run some "admin" games forcely off the admin privileges by using this bat command:
+						set __COMPAT_LAYER=RunAsInvoker
+						start "" "C:\Path\To\game-or-launcher.exe""
+  					instead of run all the Script, AHK, and the OBS with admin privileges.
+
+
 This script is for load into the AutoHotKey 2.0, plug and play, but you need to fill your own values, such as your fonts, color, space size, etc. 
 This footage is a brief showcase for the effect it can achive: https://youtu.be/dBXBrbwaHFA
 
