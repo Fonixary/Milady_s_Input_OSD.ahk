@@ -1,0 +1,545 @@
+;  Milady's Input on Screen Display - a light weight plug-script to showing the current input status for mouse and keyboard.
+;    Copyright (C) 2026  Fonixary / fnxr.org
+;
+;    This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+;
+;    This program is distributed in the hope that it will be useful and for share the fun, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+;
+;    You should have received a copy of the GNU General Public License along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
+#Requires AutoHotkey v2.0
+#SingleInstance Force
+A_MaxHotkeysPerInterval := 2000  ; Increase the allowed hotkey firing limit to prevent warning popups
+
+; ==============================================================================
+; 🎛️ CONFIGURATION CONSTANTS (EDIT FREELY HERE)
+; ==============================================================================
+global CFG_BURST_LIMIT      := 4    ; Max key presses allowed within the time window
+global CFG_BURST_WINDOW     := 200   ; Sliding time window in ms to count key presses
+global CFG_COOLDOWN_DELAY   := 1000  ; Recovery delay in ms: mutes overlay output after a macro burst
+
+global CFG_KEY_TIMEOUT   := 400   ; Full brightness duration per block (ms)
+global CFG_FADE_DURATION := 2000  ; Fade duration per block (ms)
+global TRANSPARENT_COLOR := "000000"  ; Magenta chroma key for background transparency
+
+global BLOCK_SIZE        := 60    ; Width and height of each square block (50x50)
+global BLOCK_SPACING     := 10    ; Horizontal spacing/gap between blocks in the queue
+global CORNER_RADIUS     := 2     ; Rounded corner radius in pixels (2 px)
+global TEXT_TOP_OFFSET   := 6     ; Vertical offset for text from the top border
+global TEXT_LEFT_OFFSET  := 6     ; Left margin offset for text so it matches single blocks nicely
+
+; --- Extra Manual Padding for Multiplier Expansion ---
+global EXTRA_WIDTH_PADDING := 24  ; Extra pixels added to width per extra character when multiplied (expands rightward)
+
+; --- Positioning & Alignment Configuration ---
+global EDGE_OFFSET_Y     := 20    ; Space in px from the top or bottom window edge
+global EDGE_OFFSET_X     := 20    ; Space in px from the left or right window edge
+global VERTICAL_ALIGN    := 1     ; 0 = Align to Top, 1 = Align to Bottom
+global HORIZONTAL_ALIGN  := 0     ; 0 = Align to Left, 1 = Align to Right (grows right-to-left)
+
+; --- Hold Background Colors (Keyboard vs Mouse) ---
+global HOLD_BG_COLOR_KEY   := "49434C"  ; Red background fill when holding a keyboard key
+global HOLD_BG_COLOR_MOUSE := "49434C"  ; Blue background fill when holding a mouse button
+
+; --- Text Colors (Keyboard vs Mouse) ---
+global TEXT_COLOR_KEY      := "F9C9DB"  ; White text for keyboard labels
+global TEXT_COLOR_MOUSE    := "BDEBFF"  ; Yellow-tinted text for mouse labels
+
+global FONT_NAME         := "Mezalia Black"   ; Editable font family name
+global FONT_SIZE         := 24    ; Font size fitted for 50x50 square
+global FONT_SIZE_F_KEYS  := 16    ; Font size specifically for F10-F24 keys
+
+
+; --- Editable Display Labels ---
+
+; --- Letters (A-Z) ---
+global LABEL_A := "A"
+global LABEL_B := "B"
+global LABEL_C := "C"
+global LABEL_D := "D"
+global LABEL_E := "E"
+global LABEL_F := "F"
+global LABEL_G := "G"
+global LABEL_H := "H"
+global LABEL_I := "I"
+global LABEL_J := "J"
+global LABEL_K := "K"
+global LABEL_L := "L"
+global LABEL_M := "M"
+global LABEL_N := "N"
+global LABEL_O := "O"
+global LABEL_P := "P"
+global LABEL_Q := "Q"
+global LABEL_R := "R"
+global LABEL_S := "S"
+global LABEL_T := "T"
+global LABEL_U := "U"
+global LABEL_V := "V"
+global LABEL_W := "W"
+global LABEL_X := "X"
+global LABEL_Y := "Y"
+global LABEL_Z := "Z"
+
+; --- Numbers (0-9) ---
+global LABEL_0 := "0"
+global LABEL_1 := "1"
+global LABEL_2 := "2"
+global LABEL_3 := "3"
+global LABEL_4 := "4"
+global LABEL_5 := "5"
+global LABEL_6 := "6"
+global LABEL_7 := "7"
+global LABEL_8 := "8"
+global LABEL_9 := "9"
+
+; --- Function Keys (F1-F24) ---
+global LABEL_F1  := "F1"
+global LABEL_F2  := "F2"
+global LABEL_F3  := "F3"
+global LABEL_F4  := "F4"
+global LABEL_F5  := "F5"
+global LABEL_F6  := "F6"
+global LABEL_F7  := "F7"
+global LABEL_F8  := "F8"
+global LABEL_F9  := "F9"
+global LABEL_F10 := "F10"
+global LABEL_F11 := "F11"
+global LABEL_F12 := "F12"
+global LABEL_F13 := "F13"
+global LABEL_F14 := "F14"
+global LABEL_F15 := "F15"
+global LABEL_F16 := "F16"
+global LABEL_F17 := "F17"
+global LABEL_F18 := "F18"
+global LABEL_F19 := "F19"
+global LABEL_F20 := "F20"
+global LABEL_F21 := "F21"
+global LABEL_F22 := "F22"
+global LABEL_F23 := "F23"
+global LABEL_F24 := "F24"
+
+; --- Symbols & Punctuation ---
+global LABEL_DASH        := "-"
+global LABEL_EQUALS      := "="
+global LABEL_LBRACKET    := "["
+global LABEL_RBRACKET    := "]"
+global LABEL_BACKSLASH   := "\"
+global LABEL_SEMICOLON   := ";"
+global LABEL_QUOTE       := "'"
+global LABEL_COMMA       := ","
+global LABEL_PERIOD      := "."
+global LABEL_SLASH       := "/"
+global LABEL_BACKTICK    := "``"
+global LABEL_TILDE       := "~"
+global LABEL_EXCLAM      := "!"
+global LABEL_AT          := "@"
+global LABEL_HASH        := "#"
+global LABEL_DOLLAR      := "$"
+global LABEL_PERCENT     := "%"
+global LABEL_CARET       := "^"
+global LABEL_AMPERSAND   := "&&"
+global LABEL_ASTERISK    := "*"
+global LABEL_LPAREN      := "("
+global LABEL_RPAREN      := ")"
+global LABEL_UNDERSCORE  := "_"
+global LABEL_PLUS        := "+"
+global LABEL_LCURLY      := "{"
+global LABEL_RCURLY      := "}"
+global LABEL_PIPE        := "|"
+global LABEL_COLON       := ":"
+global LABEL_DQUOTE      := "`""
+global LABEL_LT          := "<"
+global LABEL_GT          := ">"
+global LABEL_QUESTION    := "?"
+
+; --- Special & Mouse Keys ---
+global LABEL_SPACE       := "⎵"
+global LABEL_ENTER       := "¶"
+global LABEL_BKSP        := "⌫"
+global LABEL_DEL         := "⌦"
+global LABEL_TAB         := "🗺"
+global LABEL_ESC         := "🐾"
+global LABEL_UP          := "⍲"
+global LABEL_DOWN        := "⍱"
+global LABEL_LEFT        := "⦓"
+global LABEL_RIGHT       := "⦔"
+global LABEL_CTRL        := "🦘"
+global LABEL_SHIFT       := "🪄"
+global LABEL_ALT         := "🛡"
+global LABEL_LMB         := "🎆"
+global LABEL_RMB         := "🎇"
+global LABEL_MMB         := "☸"
+global LABEL_X1          := "⭮"
+global LABEL_X2          := "📜"
+global LABEL_WIN         := "🍫"
+global LABEL_CAPS_ON     := "🏔"
+global LABEL_CAPS_OFF    := "🗻"
+
+; ==============================================================================
+; 🚀 APPLICATION LOGIC
+; ==============================================================================
+global TargetWindow  := ""
+global ActiveBlocks  := []        ; Queue array holding active block objects
+
+keysToTrack := [
+    "a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z",
+    "0","1","2","3","4","5","6","7","8","9",
+    "-", "=", "[", "]", "\", ";", "'", ",", ".", "/", "``",
+    "~", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "+", "{", "}", "|", ":", "`"", "<", ">", "?",
+    "F1","F2","F3","F4","F5","F6","F7","F8","F9","F10","F11","F12",
+    "F13","F14","F15","F16","F17","F18","F19","F20","F21","F22","F23","F24",
+    "Space", "Enter", "Backspace", "Delete", "Tab", "Escape",
+    "Up", "Down", "Left", "Right",
+    "LCtrl", "RCtrl", "LShift", "RShift", "LAlt", "RAlt", "LWin", "RWin", "CapsLock",
+    "LButton", "RButton", "MButton", "XButton1", "XButton2"
+]
+
+for k in keysToTrack {
+    try Hotkey("~*" k, HandleKey.Bind(k))
+}
+
+SetTimer(OverlayTick, 20)
+
+OverlayTick() {
+    global TargetWindow, ActiveBlocks, CoolDownUntil
+    
+    ; If currently in cooldown, keep active blocks hidden/muted without forcing resets elsewhere
+    if (A_TickCount < CoolDownUntil) {
+        if (ActiveBlocks.Length > 0)
+            DestroyAllBlocks()
+        return
+    }
+    
+    if (ActiveBlocks.Length = 0)
+        return
+        
+    if (!WinExist(TargetWindow)) {
+        DestroyAllBlocks()
+        return
+    }
+    
+    WinGetPos(&outX, &outY, &outW, &outH, TargetWindow)
+    if (outX = -32000)
+        return
+        
+    totalDuration := CFG_KEY_TIMEOUT + CFG_FADE_DURATION
+    totalItems := ActiveBlocks.Length
+    
+    i := totalItems
+    while (i > 0 && i <= ActiveBlocks.Length) {
+        block := ActiveBlocks[i]
+        isHeld := GetKeyState(block.rawKey, "P")
+        
+        if (isHeld) {
+            block.startTime := A_TickCount
+            block.wasReleased := false
+            if (block.holdStartTime = 0)
+                block.holdStartTime := A_TickCount
+            holdDuration := A_TickCount - block.holdStartTime
+            showFill := (holdDuration > 100)
+        } else {
+            block.holdStartTime := 0
+            showFill := false
+            block.wasReleased := true
+            elapsed := A_TickCount - block.startTime
+            if (elapsed >= totalDuration) {
+                try block.gui.Destroy()
+                ActiveBlocks.RemoveAt(i)
+                i--
+                continue
+            }
+        }
+        
+        if (isHeld || (A_TickCount - block.startTime < CFG_KEY_TIMEOUT)) {
+            opacity := 255
+        } else {
+            fadeElapsed := (A_TickCount - block.startTime) - CFG_KEY_TIMEOUT
+            opacity := Integer(255 * (1 - (fadeElapsed / CFG_FADE_DURATION)))
+        }
+        
+        block.fillCtrl.Visible := showFill
+        yOffset := (VERTICAL_ALIGN = 1) ? (outH - BLOCK_SIZE - EDGE_OFFSET_Y) : EDGE_OFFSET_Y
+        currWidth := block.currentWidth
+        
+        if (HORIZONTAL_ALIGN = 1) {
+            rightAnchor := outW - EDGE_OFFSET_X
+            cumulativeWidth := 0
+            Loop i {
+                j := A_Index
+                cumulativeWidth += ActiveBlocks[j].currentWidth + (j > 1 ? BLOCK_SPACING : 0)
+            }
+            xOffset := rightAnchor - cumulativeWidth
+        } else {
+            xOffset := EDGE_OFFSET_X
+            Loop i - 1 {
+                j := A_Index
+                xOffset += ActiveBlocks[j].currentWidth + BLOCK_SPACING
+            }
+        }
+        
+        try {
+            block.gui.Show("X" (outX + xOffset) " Y" (outY + yOffset) " W" currWidth " H" BLOCK_SIZE " NoActivate")
+            WinSetTransColor(TRANSPARENT_COLOR " " opacity, block.gui)
+        }
+        i--
+    }
+}
+
+GetDisplayLabel(keyName) {
+    global LABEL_A, LABEL_B, LABEL_C, LABEL_D, LABEL_E, LABEL_F, LABEL_G, LABEL_H
+    global LABEL_I, LABEL_J, LABEL_K, LABEL_L, LABEL_M, LABEL_N, LABEL_O, LABEL_P
+    global LABEL_Q, LABEL_R, LABEL_S, LABEL_T, LABEL_U, LABEL_V, LABEL_W, LABEL_X
+    global LABEL_Y, LABEL_Z
+    global LABEL_0, LABEL_1, LABEL_2, LABEL_3, LABEL_4, LABEL_5, LABEL_6, LABEL_7, LABEL_8, LABEL_9
+    global LABEL_F1, LABEL_F2, LABEL_F3, LABEL_F4, LABEL_F5, LABEL_F6, LABEL_F7, LABEL_F8
+    global LABEL_F9, LABEL_F10, LABEL_F11, LABEL_F12, LABEL_F13, LABEL_F14, LABEL_F15, LABEL_F16
+    global LABEL_F17, LABEL_F18, LABEL_F19, LABEL_F20, LABEL_F21, LABEL_F22, LABEL_F23, LABEL_F24
+    global LABEL_DASH, LABEL_EQUALS, LABEL_LBRACKET, LABEL_RBRACKET, LABEL_BACKSLASH
+    global LABEL_SEMICOLON, LABEL_QUOTE, LABEL_COMMA, LABEL_PERIOD, LABEL_SLASH, LABEL_BACKTICK
+    global LABEL_TILDE, LABEL_EXCLAM, LABEL_AT, LABEL_HASH, LABEL_DOLLAR, LABEL_PERCENT
+    global LABEL_CARET, LABEL_AMPERSAND, LABEL_ASTERISK, LABEL_LPAREN, LABEL_RPAREN
+    global LABEL_UNDERSCORE, LABEL_PLUS, LABEL_LCURLY, LABEL_RCURLY, LABEL_PIPE
+    global LABEL_COLON, LABEL_DQUOTE, LABEL_LT, LABEL_GT, LABEL_QUESTION
+    global LABEL_SPACE, LABEL_ENTER, LABEL_BKSP, LABEL_DEL, LABEL_TAB, LABEL_ESC
+    global LABEL_UP, LABEL_DOWN, LABEL_LEFT, LABEL_RIGHT
+    global LABEL_CTRL, LABEL_SHIFT, LABEL_ALT, LABEL_WIN
+    global LABEL_CAPS_ON, LABEL_CAPS_OFF
+    global LABEL_LMB, LABEL_RMB, LABEL_MMB, LABEL_X1, LABEL_X2
+
+    switch Format("{:L}", keyName) {
+        case "a": return LABEL_A
+        case "b": return LABEL_B
+        case "c": return LABEL_C
+        case "d": return LABEL_D
+        case "e": return LABEL_E
+        case "f": return LABEL_F
+        case "g": return LABEL_G
+        case "h": return LABEL_H
+        case "i": return LABEL_I
+        case "j": return LABEL_J
+        case "k": return LABEL_K
+        case "l": return LABEL_L
+        case "m": return LABEL_M
+        case "n": return LABEL_N
+        case "o": return LABEL_O
+        case "p": return LABEL_P
+        case "q": return LABEL_Q
+        case "r": return LABEL_R
+        case "s": return LABEL_S
+        case "t": return LABEL_T
+        case "u": return LABEL_U
+        case "v": return LABEL_V
+        case "w": return LABEL_W
+        case "x": return LABEL_X
+        case "y": return LABEL_Y
+        case "z": return LABEL_Z
+        case "0": return LABEL_0
+        case "1": return LABEL_1
+        case "2": return LABEL_2
+        case "3": return LABEL_3
+        case "4": return LABEL_4
+        case "5": return LABEL_5
+        case "6": return LABEL_6
+        case "7": return LABEL_7
+        case "8": return LABEL_8
+        case "9": return LABEL_9
+        case "f1":  return LABEL_F1
+        case "f2":  return LABEL_F2
+        case "f3":  return LABEL_F3
+        case "f4":  return LABEL_F4
+        case "f5":  return LABEL_F5
+        case "f6":  return LABEL_F6
+        case "f7":  return LABEL_F7
+        case "f8":  return LABEL_F8
+        case "f9":  return LABEL_F9
+        case "f10": return LABEL_F10
+        case "f11": return LABEL_F11
+        case "f12": return LABEL_F12
+        case "f13": return LABEL_F13
+        case "f14": return LABEL_F14
+        case "f15": return LABEL_F15
+        case "f16": return LABEL_F16
+        case "f17": return LABEL_F17
+        case "f18": return LABEL_F18
+        case "f19": return LABEL_F19
+        case "f20": return LABEL_F20
+        case "f21": return LABEL_F21
+        case "f22": return LABEL_F22
+        case "f23": return LABEL_F23
+        case "f24": return LABEL_F24
+        case "-":   return LABEL_DASH
+        case "=":   return LABEL_EQUALS
+        case "[":   return LABEL_LBRACKET
+        case "]":   return LABEL_RBRACKET
+        case "\":   return LABEL_BACKSLASH
+        case ";":   return LABEL_SEMICOLON
+        case "'":   return LABEL_QUOTE
+        case ",":   return LABEL_COMMA
+        case ".":   return LABEL_PERIOD
+        case "/":   return LABEL_SLASH
+        case "``":  return LABEL_BACKTICK
+        case "~":   return LABEL_TILDE
+        case "!":   return LABEL_EXCLAM
+        case "@":   return LABEL_AT
+        case "#":   return LABEL_HASH
+        case "$":   return LABEL_DOLLAR
+        case "%":   return LABEL_PERCENT
+        case "^":   return LABEL_CARET
+        case "&":   return LABEL_AMPERSAND
+        case "*":   return LABEL_ASTERISK
+        case "(":   return LABEL_LPAREN
+        case ")":   return LABEL_RPAREN
+        case "_":   return LABEL_UNDERSCORE
+        case "+":   return LABEL_PLUS
+        case "{":   return LABEL_LCURLY
+        case "}":   return LABEL_RCURLY
+        case "|":   return LABEL_PIPE
+        case ":":   return LABEL_COLON
+        case "`""`: return LABEL_DQUOTE
+        case "<":   return LABEL_LT
+        case ">":   return LABEL_GT
+        case "?":   return LABEL_QUESTION
+        case "space":          return LABEL_SPACE
+        case "enter":          return LABEL_ENTER
+        case "backspace":      return LABEL_BKSP
+        case "delete":         return LABEL_DEL
+        case "tab":            return LABEL_TAB
+        case "escape":         return LABEL_ESC
+        case "up":             return LABEL_UP
+        case "down":           return LABEL_DOWN
+        case "left":           return LABEL_LEFT
+        case "right":          return LABEL_RIGHT
+        case "lctrl", "rctrl": return LABEL_CTRL
+        case "lshift", "rshift": return LABEL_SHIFT
+        case "lalt", "ralt":   return LABEL_ALT
+        case "lwin", "rwin":   return LABEL_WIN
+        case "capslock":       return GetKeyState("CapsLock", "T") ? LABEL_CAPS_ON : LABEL_CAPS_OFF
+        case "lbutton":        return LABEL_LMB
+        case "rbutton":        return LABEL_RMB
+        case "mbutton":        return LABEL_MMB
+        case "xbutton1":       return LABEL_X1
+        case "xbutton2":       return LABEL_X2
+        case "&":              return "&&"
+        default:               return Format("{:U}", keyName)
+    }
+}
+
+global PressTimestamps := []
+global CoolDownUntil   := 0
+
+HandleKey(keyName, *) {
+    global TargetWindow, ActiveBlocks, FONT_SIZE, FONT_NAME, TRANSPARENT_COLOR, HOLD_BG_COLOR_KEY, HOLD_BG_COLOR_MOUSE, TEXT_COLOR_KEY, TEXT_COLOR_MOUSE, BLOCK_SIZE, CORNER_RADIUS, TEXT_TOP_OFFSET, TEXT_LEFT_OFFSET, EXTRA_WIDTH_PADDING
+    global CFG_BURST_LIMIT, CFG_BURST_WINDOW, CFG_COOLDOWN_DELAY, PressTimestamps, CoolDownUntil
+    
+    currTime := A_TickCount
+    
+    ; 1. If currently inside the cool-down lockout period, suppress output entirely
+    if (currTime < CoolDownUntil)
+        return
+        
+    ; 2. Sliding Window Frequency Check (Counts presses within CFG_BURST_WINDOW ms)
+    PressTimestamps.Push(currTime)
+    
+    ; Prune timestamps outside the rolling time window
+    while (PressTimestamps.Length > 0 && (currTime - PressTimestamps[1] > CFG_BURST_WINDOW)) {
+        PressTimestamps.RemoveAt(1)
+    }
+    
+    ; If burst count exceeds user-defined limit, trip lockout and mute output
+    if (PressTimestamps.Length >= CFG_BURST_LIMIT) {
+        CoolDownUntil := currTime + CFG_COOLDOWN_DELAY
+        PressTimestamps := []  ; Clear history
+        DestroyAllBlocks()
+        return
+    }
+    
+    activeWin := WinExist("A")
+    if (!activeWin)
+        return
+        
+    if (TargetWindow != activeWin) {
+        DestroyAllBlocks()
+        TargetWindow := activeWin
+    }
+    
+    for block in ActiveBlocks {
+        if (block.rawKey = keyName) {
+            if (block.wasReleased) {
+                block.startTime := A_TickCount
+                block.count++
+                block.wasReleased := false
+                
+                baseLabel := GetDisplayLabel(keyName)
+                if (block.count > 1) {
+                    newText := baseLabel " x" block.count
+                    block.textCtrl.Value := newText
+                    
+                    charExtra := StrLen(newText) - StrLen(baseLabel)
+                    newWidth := BLOCK_SIZE + (charExtra * EXTRA_WIDTH_PADDING)
+                    block.currentWidth := newWidth
+                    
+                    block.fillCtrl.Move(0, 0, newWidth, BLOCK_SIZE)
+                    block.textCtrl.Move(TEXT_LEFT_OFFSET, TEXT_TOP_OFFSET, newWidth - TEXT_LEFT_OFFSET, BLOCK_SIZE - TEXT_TOP_OFFSET)
+                    
+                    hRgn := DllCall("gdi32\CreateRoundRectRgn", "Int", 0, "Int", 0, "Int", newWidth, "Int", BLOCK_SIZE, "Int", CORNER_RADIUS * 2, "Int", CORNER_RADIUS * 2, "Ptr")
+                    DllCall("user32\SetWindowRgn", "Ptr", block.gui.Hwnd, "Ptr", hRgn, "Int", True)
+                }
+            } else {
+                block.startTime := A_TickCount
+            }
+            return
+        }
+    }
+    
+    lowerKey := Format("{:L}", keyName)
+    isMouse := (lowerKey = "lbutton" || lowerKey = "rbutton" || lowerKey = "mbutton" || lowerKey = "xbutton1" || lowerKey = "xbutton2")
+    currentHoldColor := isMouse ? HOLD_BG_COLOR_MOUSE : HOLD_BG_COLOR_KEY
+    currentTextColor := isMouse ? TEXT_COLOR_MOUSE : TEXT_COLOR_KEY
+    
+    g := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20")
+    g.BackColor := TRANSPARENT_COLOR
+    
+    hRgn := DllCall("gdi32\CreateRoundRectRgn", "Int", 0, "Int", 0, "Int", BLOCK_SIZE, "Int", BLOCK_SIZE, "Int", CORNER_RADIUS * 2, "Int", CORNER_RADIUS * 2, "Ptr")
+    DllCall("user32\SetWindowRgn", "Ptr", g.Hwnd, "Ptr", hRgn, "Int", True)
+    
+    bs := BLOCK_SIZE
+    fillCtrl := g.Add("Text", "x0 y0 w" bs " h" bs " Background" currentHoldColor)
+    fillCtrl.Visible := false
+    
+    displayLabel := GetDisplayLabel(keyName)
+    if RegExMatch(Format("{:L}", keyName), "^f[1-9][0-9]$") {
+        currentFontSize := FONT_SIZE_F_KEYS
+    } else {
+        currentFontSize := (StrLen(displayLabel) > 2) ? 14 : FONT_SIZE
+    }
+
+    g.SetFont("S" currentFontSize " Bold", FONT_NAME)
+    textCtrl := g.Add("Text", "x" TEXT_LEFT_OFFSET " y" TEXT_TOP_OFFSET " w" (bs - TEXT_LEFT_OFFSET) " h" (bs - TEXT_TOP_OFFSET) " Left c" currentTextColor " BackgroundTrans", displayLabel)
+    
+    g.Show("NoActivate")
+    try WinSetTransColor(TRANSPARENT_COLOR " 255", g)
+    
+    newBlock := {
+        gui: g,
+        rawKey: keyName,
+        fillCtrl: fillCtrl,
+        textCtrl: textCtrl,
+        count: 1,
+        currentWidth: BLOCK_SIZE,
+        startTime: A_TickCount,
+        holdStartTime: A_TickCount,
+        wasReleased: false
+    }
+    
+    ActiveBlocks.Push(newBlock)
+}
+
+DestroyAllBlocks() {
+    global ActiveBlocks, TargetWindow
+    for block in ActiveBlocks {
+        try block.gui.Destroy()
+    }
+    ActiveBlocks := []
+    TargetWindow := ""
+}

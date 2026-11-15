@@ -47,6 +47,7 @@ global FONT_NAME         := "Mezalia Black"   ; Editable font family name
 global FONT_SIZE         := 24    ; Font size fitted for 50x50 square
 global FONT_SIZE_F_KEYS  := 16    ; Font size specifically for F10-F24 keys
 
+
 ; --- Editable Display Labels ---
 
 ; --- Letters (A-Z) ---
@@ -114,40 +115,6 @@ global LABEL_F21 := "F21"
 global LABEL_F22 := "F22"
 global LABEL_F23 := "F23"
 global LABEL_F24 := "F24"
-
-; --- Symbols & Punctuation ---
-global LABEL_DASH        := "-"
-global LABEL_EQUALS      := "="
-global LABEL_LBRACKET    := "["
-global LABEL_RBRACKET    := "]"
-global LABEL_BACKSLASH   := "\"
-global LABEL_SEMICOLON   := ";"
-global LABEL_QUOTE       := "'"
-global LABEL_COMMA       := ","
-global LABEL_PERIOD      := "."
-global LABEL_SLASH       := "/"
-global LABEL_BACKTICK    := "``"
-global LABEL_TILDE       := "~"
-global LABEL_EXCLAM      := "!"
-global LABEL_AT          := "@"
-global LABEL_HASH        := "#"
-global LABEL_DOLLAR      := "$"
-global LABEL_PERCENT     := "%"
-global LABEL_CARET       := "^"
-global LABEL_AMPERSAND   := "&&"
-global LABEL_ASTERISK    := "*"
-global LABEL_LPAREN      := "("
-global LABEL_RPAREN      := ")"
-global LABEL_UNDERSCORE  := "_"
-global LABEL_PLUS        := "+"
-global LABEL_LCURLY      := "{"
-global LABEL_RCURLY      := "}"
-global LABEL_PIPE        := "|"
-global LABEL_COLON       := ":"
-global LABEL_DQUOTE      := "`""
-global LABEL_LT          := "<"
-global LABEL_GT          := ">"
-global LABEL_QUESTION    := "?"
 
 ; --- Symbols & Punctuation ---
 global LABEL_DASH        := "-"
