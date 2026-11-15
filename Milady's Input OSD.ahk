@@ -15,13 +15,13 @@
 ; ==============================================================================
 global CFG_KEY_TIMEOUT   := 400   ; Full brightness duration per block (ms)
 global CFG_FADE_DURATION := 2000  ; Fade duration per block (ms)
-global TRANSPARENT_COLOR := "FFF7E8"  ; Magenta chroma key for background transparency
+global TRANSPARENT_COLOR := "000000"  ; Magenta chroma key for background transparency
 
 global BLOCK_SIZE        := 60    ; Width and height of each square block (50x50)
 global BLOCK_SPACING     := 10    ; Horizontal spacing/gap between blocks in the queue
 global CORNER_RADIUS     := 2     ; Rounded corner radius in pixels (2 px)
 global TEXT_TOP_OFFSET   := 6     ; Vertical offset for text from the top border
-global TEXT_LEFT_OFFSET  := 8     ; Left margin offset for text so it matches single blocks nicely
+global TEXT_LEFT_OFFSET  := 6     ; Left margin offset for text so it matches single blocks nicely
 
 ; --- Extra Manual Padding for Multiplier Expansion ---
 global EXTRA_WIDTH_PADDING := 24  ; Extra pixels added to width per extra character when multiplied (expands rightward)
@@ -41,7 +41,8 @@ global TEXT_COLOR_KEY      := "F9C9DB"  ; White text for keyboard labels
 global TEXT_COLOR_MOUSE    := "BDEBFF"  ; Yellow-tinted text for mouse labels
 
 global FONT_NAME         := "Mezalia Black"   ; Editable font family name
-global FONT_SIZE         := 20    ; Font size fitted for 50x50 square
+global FONT_SIZE         := 24    ; Font size fitted for 50x50 square
+global FONT_SIZE_F_KEYS  := 16    ; Font size specifically for F10-F24 keys
 
 ; --- Editable Display Labels for Special & Mouse Keys ---
 global LABEL_SPACE       := "⎵"
@@ -76,7 +77,7 @@ keysToTrack := [
     ; Numbers & Row Symbols
     "0","1","2","3","4","5","6","7","8","9",
     ; Punctuation & Special Characters (Safely escaped)
-    "-", "=", "[", "]", "\\", ";", "'", ",", ".", "/", "``",
+    "-", "=", "[", "]", "\", ";", "'", ",", ".", "/", "``",
     ; Shifted Row Symbols / Extra Keys
     "~", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "+", "{", "}", "|", ":", "`"", "<", ">", "?",
     ; Function Keys F1 - F24
@@ -223,6 +224,7 @@ GetDisplayLabel(keyName) {
         case "mbutton":        return LABEL_MMB
         case "xbutton1":       return LABEL_X1
         case "xbutton2":       return LABEL_X2
+        case "&":              return "&&"  ; Escapes the ampersand so it doesn't draw an underline
         default:               return Format("{:U}", keyName)
     }
 }
@@ -293,10 +295,19 @@ HandleKey(keyName, *) {
     fillCtrl := g.Add("Text", "x0 y0 w" bs " h" bs " Background" currentHoldColor)
     fillCtrl.Visible := false
     
+; Add a dedicated background fill control using the correct color (hidden by default)
+    fillCtrl := g.Add("Text", "x0 y0 w" bs " h" bs " Background" currentHoldColor)
+    fillCtrl.Visible := false
+    
     ; Add text label left-aligned with a clean left margin and independent text color
     displayLabel := GetDisplayLabel(keyName)
-    currentFontSize := (StrLen(displayLabel) > 3) ? 14 : FONT_SIZE
     
+    if RegExMatch(Format("{:L}", keyName), "^f[1-9][0-9]$") {
+        currentFontSize := FONT_SIZE_F_KEYS
+    } else {
+        currentFontSize := (StrLen(displayLabel) > 2) ? 14 : FONT_SIZE
+    }
+
     g.SetFont("S" currentFontSize " Bold", FONT_NAME)
     textCtrl := g.Add("Text", "x" TEXT_LEFT_OFFSET " y" TEXT_TOP_OFFSET " w" (bs - TEXT_LEFT_OFFSET) " h" (bs - TEXT_TOP_OFFSET) " Left c" currentTextColor " BackgroundTrans", displayLabel)
     
