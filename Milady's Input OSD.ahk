@@ -7,8 +7,11 @@
 ;
 ;    You should have received a copy of the GNU General Public License along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+
 #Requires AutoHotkey v2.0
 #SingleInstance Force
+A_MaxHotkeysPerInterval := 1000  ; Increase the allowed hotkey firing limit to prevent warning popups
+
 
 ; ==============================================================================
 ; 🎛️ CONFIGURATION CONSTANTS (EDIT FREELY HERE)
@@ -44,7 +47,143 @@ global FONT_NAME         := "Mezalia Black"   ; Editable font family name
 global FONT_SIZE         := 24    ; Font size fitted for 50x50 square
 global FONT_SIZE_F_KEYS  := 16    ; Font size specifically for F10-F24 keys
 
-; --- Editable Display Labels for Special & Mouse Keys ---
+; --- Editable Display Labels ---
+
+; --- Letters (A-Z) ---
+global LABEL_A := "A"
+global LABEL_B := "B"
+global LABEL_C := "C"
+global LABEL_D := "D"
+global LABEL_E := "E"
+global LABEL_F := "F"
+global LABEL_G := "G"
+global LABEL_H := "H"
+global LABEL_I := "I"
+global LABEL_J := "J"
+global LABEL_K := "K"
+global LABEL_L := "L"
+global LABEL_M := "M"
+global LABEL_N := "N"
+global LABEL_O := "O"
+global LABEL_P := "P"
+global LABEL_Q := "Q"
+global LABEL_R := "R"
+global LABEL_S := "S"
+global LABEL_T := "T"
+global LABEL_U := "U"
+global LABEL_V := "V"
+global LABEL_W := "W"
+global LABEL_X := "X"
+global LABEL_Y := "Y"
+global LABEL_Z := "Z"
+
+; --- Numbers (0-9) ---
+global LABEL_0 := "0"
+global LABEL_1 := "1"
+global LABEL_2 := "2"
+global LABEL_3 := "3"
+global LABEL_4 := "4"
+global LABEL_5 := "5"
+global LABEL_6 := "6"
+global LABEL_7 := "7"
+global LABEL_8 := "8"
+global LABEL_9 := "9"
+
+; --- Function Keys (F1-F24) ---
+global LABEL_F1  := "F1"
+global LABEL_F2  := "F2"
+global LABEL_F3  := "F3"
+global LABEL_F4  := "F4"
+global LABEL_F5  := "F5"
+global LABEL_F6  := "F6"
+global LABEL_F7  := "F7"
+global LABEL_F8  := "F8"
+global LABEL_F9  := "F9"
+global LABEL_F10 := "F10"
+global LABEL_F11 := "F11"
+global LABEL_F12 := "F12"
+global LABEL_F13 := "F13"
+global LABEL_F14 := "F14"
+global LABEL_F15 := "F15"
+global LABEL_F16 := "F16"
+global LABEL_F17 := "F17"
+global LABEL_F18 := "F18"
+global LABEL_F19 := "F19"
+global LABEL_F20 := "F20"
+global LABEL_F21 := "F21"
+global LABEL_F22 := "F22"
+global LABEL_F23 := "F23"
+global LABEL_F24 := "F24"
+
+; --- Symbols & Punctuation ---
+global LABEL_DASH        := "-"
+global LABEL_EQUALS      := "="
+global LABEL_LBRACKET    := "["
+global LABEL_RBRACKET    := "]"
+global LABEL_BACKSLASH   := "\"
+global LABEL_SEMICOLON   := ";"
+global LABEL_QUOTE       := "'"
+global LABEL_COMMA       := ","
+global LABEL_PERIOD      := "."
+global LABEL_SLASH       := "/"
+global LABEL_BACKTICK    := "``"
+global LABEL_TILDE       := "~"
+global LABEL_EXCLAM      := "!"
+global LABEL_AT          := "@"
+global LABEL_HASH        := "#"
+global LABEL_DOLLAR      := "$"
+global LABEL_PERCENT     := "%"
+global LABEL_CARET       := "^"
+global LABEL_AMPERSAND   := "&&"
+global LABEL_ASTERISK    := "*"
+global LABEL_LPAREN      := "("
+global LABEL_RPAREN      := ")"
+global LABEL_UNDERSCORE  := "_"
+global LABEL_PLUS        := "+"
+global LABEL_LCURLY      := "{"
+global LABEL_RCURLY      := "}"
+global LABEL_PIPE        := "|"
+global LABEL_COLON       := ":"
+global LABEL_DQUOTE      := "`""
+global LABEL_LT          := "<"
+global LABEL_GT          := ">"
+global LABEL_QUESTION    := "?"
+
+; --- Symbols & Punctuation ---
+global LABEL_DASH        := "-"
+global LABEL_EQUALS      := "="
+global LABEL_LBRACKET    := "["
+global LABEL_RBRACKET    := "]"
+global LABEL_BACKSLASH   := "\"
+global LABEL_SEMICOLON   := ";"
+global LABEL_QUOTE       := "'"
+global LABEL_COMMA       := ","
+global LABEL_PERIOD      := "."
+global LABEL_SLASH       := "/"
+global LABEL_BACKTICK    := "``"
+global LABEL_TILDE       := "~"
+global LABEL_EXCLAM      := "!"
+global LABEL_AT          := "@"
+global LABEL_HASH        := "#"
+global LABEL_DOLLAR      := "$"
+global LABEL_PERCENT     := "%"
+global LABEL_CARET       := "^"
+global LABEL_AMPERSAND   := "&&"  ; Escaped ampersand
+global LABEL_ASTERISK    := "*"
+global LABEL_LPAREN      := "("
+global LABEL_RPAREN      := ")"
+global LABEL_UNDERSCORE  := "_"
+global LABEL_PLUS        := "+"
+global LABEL_LCURLY      := "{"
+global LABEL_RCURLY      := "}"
+global LABEL_PIPE        := "|"
+global LABEL_COLON       := ":"
+global LABEL_DQUOTE      := "`""  ; Escaped double quote
+global LABEL_LT          := "<"
+global LABEL_GT          := ">"
+global LABEL_QUESTION    := "?"
+
+; --- Special & Mouse Keys ---
 global LABEL_SPACE       := "⎵"
 global LABEL_ENTER       := "¶"
 global LABEL_BKSP        := "⌫"
@@ -63,6 +202,10 @@ global LABEL_RMB         := "🎇"
 global LABEL_MMB         := "☸"
 global LABEL_X1          := "⭮"
 global LABEL_X2          := "📜"
+global LABEL_WIN        := "🍫"
+global LABEL_CAPS_ON   := "🏔"
+global LABEL_CAPS_OFF  := "🗻"
+
 
 ; ==============================================================================
 ; 🚀 APPLICATION LOGIC
@@ -87,7 +230,7 @@ keysToTrack := [
     "Space", "Enter", "Backspace", "Delete", "Tab", "Escape",
     "Up", "Down", "Left", "Right",
     ; Modifier Keys
-    "LCtrl", "RCtrl", "LShift", "RShift", "LAlt", "RAlt",
+    "LCtrl", "RCtrl", "LShift", "RShift", "LAlt", "RAlt", "LWin", "RWin", "CapsLock",
     ; 5-Key Mouse Support
     "LButton", "RButton", "MButton", "XButton1", "XButton2"
 ]
@@ -200,30 +343,148 @@ OverlayTick() {
 }
 
 GetDisplayLabel(keyName) {
+    global LABEL_A, LABEL_B, LABEL_C, LABEL_D, LABEL_E, LABEL_F, LABEL_G, LABEL_H
+    global LABEL_I, LABEL_J, LABEL_K, LABEL_L, LABEL_M, LABEL_N, LABEL_O, LABEL_P
+    global LABEL_Q, LABEL_R, LABEL_S, LABEL_T, LABEL_U, LABEL_V, LABEL_W, LABEL_X
+    global LABEL_Y, LABEL_Z
+    global LABEL_0, LABEL_1, LABEL_2, LABEL_3, LABEL_4, LABEL_5, LABEL_6, LABEL_7, LABEL_8, LABEL_9
+    global LABEL_F1, LABEL_F2, LABEL_F3, LABEL_F4, LABEL_F5, LABEL_F6, LABEL_F7, LABEL_F8
+    global LABEL_F9, LABEL_F10, LABEL_F11, LABEL_F12, LABEL_F13, LABEL_F14, LABEL_F15, LABEL_F16
+    global LABEL_F17, LABEL_F18, LABEL_F19, LABEL_F20, LABEL_F21, LABEL_F22, LABEL_F23, LABEL_F24
+    global LABEL_DASH, LABEL_EQUALS, LABEL_LBRACKET, LABEL_RBRACKET, LABEL_BACKSLASH
+    global LABEL_SEMICOLON, LABEL_QUOTE, LABEL_COMMA, LABEL_PERIOD, LABEL_SLASH, LABEL_BACKTICK
+    global LABEL_TILDE, LABEL_EXCLAM, LABEL_AT, LABEL_HASH, LABEL_DOLLAR, LABEL_PERCENT
+    global LABEL_CARET, LABEL_AMPERSAND, LABEL_ASTERISK, LABEL_LPAREN, LABEL_RPAREN
+    global LABEL_UNDERSCORE, LABEL_PLUS, LABEL_LCURLY, LABEL_RCURLY, LABEL_PIPE
+    global LABEL_COLON, LABEL_DQUOTE, LABEL_LT, LABEL_GT, LABEL_QUESTION
     global LABEL_SPACE, LABEL_ENTER, LABEL_BKSP, LABEL_DEL, LABEL_TAB, LABEL_ESC
     global LABEL_UP, LABEL_DOWN, LABEL_LEFT, LABEL_RIGHT
-    global LABEL_CTRL, LABEL_SHIFT, LABEL_ALT
+    global LABEL_CTRL, LABEL_SHIFT, LABEL_ALT, LABEL_WIN
+    global LABEL_CAPS_ON, LABEL_CAPS_OFF
     global LABEL_LMB, LABEL_RMB, LABEL_MMB, LABEL_X1, LABEL_X2
 
     switch Format("{:L}", keyName) {
+        ; --- Letters ---
+        case "a": return LABEL_A
+        case "b": return LABEL_B
+        case "c": return LABEL_C
+        case "d": return LABEL_D
+        case "e": return LABEL_E
+        case "f": return LABEL_F
+        case "g": return LABEL_G
+        case "h": return LABEL_H
+        case "i": return LABEL_I
+        case "j": return LABEL_J
+        case "k": return LABEL_K
+        case "l": return LABEL_L
+        case "m": return LABEL_M
+        case "n": return LABEL_N
+        case "o": return LABEL_O
+        case "p": return LABEL_P
+        case "q": return LABEL_Q
+        case "r": return LABEL_R
+        case "s": return LABEL_S
+        case "t": return LABEL_T
+        case "u": return LABEL_U
+        case "v": return LABEL_V
+        case "w": return LABEL_W
+        case "x": return LABEL_X
+        case "y": return LABEL_Y
+        case "z": return LABEL_Z
+
+        ; --- Numbers ---
+        case "0": return LABEL_0
+        case "1": return LABEL_1
+        case "2": return LABEL_2
+        case "3": return LABEL_3
+        case "4": return LABEL_4
+        case "5": return LABEL_5
+        case "6": return LABEL_6
+        case "7": return LABEL_7
+        case "8": return LABEL_8
+        case "9": return LABEL_9
+
+        ; --- Function Keys ---
+        case "f1":  return LABEL_F1
+        case "f2":  return LABEL_F2
+        case "f3":  return LABEL_F3
+        case "f4":  return LABEL_F4
+        case "f5":  return LABEL_F5
+        case "f6":  return LABEL_F6
+        case "f7":  return LABEL_F7
+        case "f8":  return LABEL_F8
+        case "f9":  return LABEL_F9
+        case "f10": return LABEL_F10
+        case "f11": return LABEL_F11
+        case "f12": return LABEL_F12
+        case "f13": return LABEL_F13
+        case "f14": return LABEL_F14
+        case "f15": return LABEL_F15
+        case "f16": return LABEL_F16
+        case "f17": return LABEL_F17
+        case "f18": return LABEL_F18
+        case "f19": return LABEL_F19
+        case "f20": return LABEL_F20
+        case "f21": return LABEL_F21
+        case "f22": return LABEL_F22
+        case "f23": return LABEL_F23
+        case "f24": return LABEL_F24
+
+        ; --- Symbols & Punctuation ---
+        case "-":   return LABEL_DASH
+        case "=":   return LABEL_EQUALS
+        case "[":   return LABEL_LBRACKET
+        case "]":   return LABEL_RBRACKET
+        case "\":   return LABEL_BACKSLASH
+        case ";":   return LABEL_SEMICOLON
+        case "'":   return LABEL_QUOTE
+        case ",":   return LABEL_COMMA
+        case ".":   return LABEL_PERIOD
+        case "/":   return LABEL_SLASH
+        case "``":  return LABEL_BACKTICK
+        case "~":   return LABEL_TILDE
+        case "!":   return LABEL_EXCLAM
+        case "@":   return LABEL_AT
+        case "#":   return LABEL_HASH
+        case "$":   return LABEL_DOLLAR
+        case "%":   return LABEL_PERCENT
+        case "^":   return LABEL_CARET
+        case "&":   return LABEL_AMPERSAND
+        case "*":   return LABEL_ASTERISK
+        case "(":   return LABEL_LPAREN
+        case ")":   return LABEL_RPAREN
+        case "_":   return LABEL_UNDERSCORE
+        case "+":   return LABEL_PLUS
+        case "{":   return LABEL_LCURLY
+        case "}":   return LABEL_RCURLY
+        case "|":   return LABEL_PIPE
+        case ":":   return LABEL_COLON
+        case "`""`: return LABEL_DQUOTE
+        case "<":   return LABEL_LT
+        case ">":   return LABEL_GT
+        case "?":   return LABEL_QUESTION
+
+        ; --- Special & Mouse Keys ---
         case "space":          return LABEL_SPACE
         case "enter":          return LABEL_ENTER
-        case "backspace":      return LABEL_BKSP
+        case "backspace":     return LABEL_BKSP
         case "delete":         return LABEL_DEL
-        case "tab":            return LABEL_TAB
+        case "tab":             return LABEL_TAB
         case "escape":         return LABEL_ESC
         case "up":             return LABEL_UP
-        case "down":           return LABEL_DOWN
-        case "left":           return LABEL_LEFT
-        case "right":          return LABEL_RIGHT
-        case "lctrl", "rctrl": return LABEL_CTRL
+        case "down":          return LABEL_DOWN
+        case "left":            return LABEL_LEFT
+        case "right":           return LABEL_RIGHT
+        case "lctrl", "rctrl":   return LABEL_CTRL
         case "lshift", "rshift": return LABEL_SHIFT
-        case "lalt", "ralt":   return LABEL_ALT
+        case "lalt", "ralt":     return LABEL_ALT
+        case "lwin", "rwin":  return LABEL_WIN
+        case "capslock":       return GetKeyState("CapsLock", "T") ? LABEL_CAPS_ON : LABEL_CAPS_OFF
         case "lbutton":        return LABEL_LMB
         case "rbutton":        return LABEL_RMB
-        case "mbutton":        return LABEL_MMB
-        case "xbutton1":       return LABEL_X1
-        case "xbutton2":       return LABEL_X2
+        case "mbutton":       return LABEL_MMB
+        case "xbutton1":      return LABEL_X1
+        case "xbutton2":      return LABEL_X2
         case "&":              return "&&"  ; Escapes the ampersand so it doesn't draw an underline
         default:               return Format("{:U}", keyName)
     }
